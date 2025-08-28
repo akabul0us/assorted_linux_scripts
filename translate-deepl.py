@@ -9,15 +9,20 @@ try:
         deepl_auth_key = file.read().rstrip()
     #rstrip ensures it doesn't get confused by a newline character
 except OSError:
+    print('\033[31;1m', end='')
     print ('You need a DeepL API auth key to use this script.')
+    print('\x1b[0m', end='')
     print ('Please store your key as a text file in your home directory and name it .deepl_auth_key')
-    '''
-    /home/USERNAME/.deepl_auth_key in Linux
-    /Users/USERNAME/.deepl_auth_key in macOS
-    C:/Users/USERNAME/.deepl_auth_key in Windows
-    /data/data/com.termux/files/home/.deepl_auth_key in Android (using Termux)
-    any other UNIX-based system -- whatever $HOME/.deepl_auth_key expands to
-    '''
+    def platform_check():
+    if sys.platform == "win32":
+	print("C:/Users/USERNAME/.deepl_auth_key")
+    elif sys.platform == "darwin":
+        print("/Users/USERNAME/.deepl_auth_key")
+    elif sys.platform == "linux":
+        print("/home/USERNAME/.deepl_auth_key")
+    else:
+        print("...wherever that is on your system")
+    platform_check
     sys.exit(1)
 parser = argparse.ArgumentParser()
 parser.add_argument("file", help="text file to translate")
@@ -33,7 +38,9 @@ print(result.text)
 deepl_client = deepl.DeepLClient(auth_key)
 usage = deepl_client.get_usage()
 if usage.any_limit_reached:
+    print('\033[31;1m', end='')
     print('Translation limit reached.')
+    print('\x1b[0m', end='')
 if usage.character.valid:
     print('\033[34;1m', end='')
     print(f"Character usage: {usage.character.count} of {usage.character.limit}")
