@@ -24,16 +24,20 @@ print_help() {
     echo "·Profit"
     exit 1
 }
-if [ ! -z "$1" ]; then
-    hashfile="$1"
+check_file() {
     if [ ! -f "$hashfile" ]; then
         echo "File not found"
         print_help
     fi
+}
+if [ ! -z "$1" ]; then
+    hashfile="$1"
+    check_file
 else
     printf "${yellow}Path to hc22000 file ${clear_color}(one WPA/WPA2 hash per line): "
     read hashfile
     printf "\n"
+    check_file
 fi
 if [ ! -z "$2" ]; then
     flag="$2"
@@ -93,7 +97,12 @@ def show_values(mic, mac_ap, mac_cl, essid):
 show_values(mic, mac_ap, mac_cl, essid)
 EOF
 }
-
+if command -v out >/dev/null 2>&1; then
+    have_oui=yes
+else
+    echo "Install oui from https://github.com/thatmattlove/oui to add device manufacturer to this script\'s output"
+    have_oui=no
+fi
 for e in $hashes; do
     if [ "$function" == "full" ]; then
         outputs="$(full)"
@@ -101,7 +110,7 @@ for e in $hashes; do
         outputs="$(standard)"
     fi
     echo "$outputs"
-    if command -v oui >/dev/null 2>&1; then
+    if [ "$have_oui" == "yes" ]; then
         printf "${red}Device manufacturer:       ${clear_color}"
         ap_mac="$(printf "$outputs" | grep "AP MAC" | grep -oE "[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}")"
         oui $ap_mac | tail -n 2 | head -n 1 | cut -c 50- | rev | cut -c 75- | rev 
