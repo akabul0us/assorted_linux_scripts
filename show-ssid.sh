@@ -100,7 +100,7 @@ EOF
 if command -v out >/dev/null 2>&1; then
     have_oui=yes
 else
-    echo "Install oui from https://github.com/thatmattlove/oui to add device manufacturer to this script\'s output"
+    echo "Install oui from https://github.com/thatmattlove/oui to add device manufacturer to this script's output"
     have_oui=no
 fi
 for e in $hashes; do
