@@ -14,14 +14,14 @@ except OSError:
     print('\x1b[0m', end='')
     print ('Please store your key as a text file in your home directory and name it .deepl_auth_key')
     def platform_check():
-    if sys.platform == "win32":
-	print("C:/Users/USERNAME/.deepl_auth_key")
-    elif sys.platform == "darwin":
-        print("/Users/USERNAME/.deepl_auth_key")
-    elif sys.platform == "linux":
-        print("/home/USERNAME/.deepl_auth_key")
-    else:
-        print("...wherever that is on your system")
+        if sys.platform == "win32":
+	        print("C:/Users/USERNAME/.deepl_auth_key")
+        elif sys.platform == "darwin":
+            print("/Users/USERNAME/.deepl_auth_key")
+        elif sys.platform == "linux":
+            print("/home/USERNAME/.deepl_auth_key")
+        else:
+            print("...wherever that is on your system")
     platform_check
     sys.exit(1)
 parser = argparse.ArgumentParser()
