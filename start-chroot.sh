@@ -19,7 +19,7 @@ else
 fi
 #check that the directory exists
 if [ ! -d "$CHROOT_DIR" ]; then
-	echo "${red}Error: Chroot directory ${clear_color}$CHROOT_DIR${red} does not exist.${clear_color}\n"
+	printf "${red}Error: Chroot directory ${clear_color}$CHROOT_DIR${red} does not exist.${clear_color}\n"
 	exit 1
 fi
 #set a variable with that directory's full path
