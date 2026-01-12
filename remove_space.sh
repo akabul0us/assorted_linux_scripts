@@ -30,7 +30,7 @@ for file in $directory/*; do
 		new_file="${file// /_}"
 		if [ "$optflag" -eq 1 ]; then
 			echo "Renaming $file to $new_file"
-			mv "$file" "$new_file"
+			mv "$file" "$new_file" 2>/dev/null
 			if [[ "$file" == *\(* ]] || [[ "$file" == *\)* ]]; then
 				new_file="${file//\)/}"
                 		newest_file="${new_file//\(/}"
@@ -38,7 +38,7 @@ for file in $directory/*; do
 			echo "Renaming $file to $newest_file"
                 	mv "$file" "$newest_file" 2>/dev/null
 			if [ "$?" -ne 0 ]; then
-				mv $new_file $newest_file
+				mv $new_file $newest_file 2>/dev/null
 			fi
 		else
 			read -p "Rename $file to $new_file? (Y/n)" conf
