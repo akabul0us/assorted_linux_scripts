@@ -117,23 +117,8 @@ done
 printf "${green}Updating kernel source${clear_color}\n"
 git pull
 printf "${green}Updating submodules${clear_color}\n"
-git pull --recurse-submodules
-#for some reason this^ does not always work
-#until i figure out why, this next bit is designed to check if it did, and if not, add the submodules one by one
-add_mod() {
-	git submodule add --force
-}
-if [ ! -f "$topdir/drivers/net/wireless/mediatek/mt76/mt76x2_core.c" ]; then
-	printf "${red}Something has gone wrong with submodules${clear_color}\n"
-	printf "${yellow}Adding one by one...${clear_color}\n"
-	add_mod https://github.com/aircrack-ng/rtl8188eus drivers/net/wireless/realtek/rtl8188eus
-	add_mod https://github.com/akabul0us/mt76 drivers/net/wireless/mediatek/mt76
-	add_mod https://github.com/akabul0us/rtl88x2bu drivers/net/wireless/realtek/rtl88x2bu
-	add_mod https://github.com/akabul0us/rtl8812au drivers/net/wireless/realtek/rtl8812au
-	add_mod https://github.com/cyberknight777/android_kernel_docker android_kernel_docker
-	add_mod https://github.com/cyberknight777/android_kernel_nethunter android_kernel_nethunter
-	add_mod https://gitlab.com/kalilinux/nethunter/build-scripts/kali-nethunter-kernel-builder kali-nethunter-kernel-builder
-fi
+git submodule init
+git submodule update --recursive --remote
 if [ ! -d "$tc_dir" ]; then
 	printf "${red}Toolchain directory not found! ${yellow}Downloading to $tc_dir...${clear_color}\n"
 	mkdir -p $tc_dir
@@ -169,7 +154,7 @@ export PATH="$tc_dir/bin:$PATH"
 cd $topdir
 #see if we want to clean up artifacts from a previous build
 printf "${yellow}Checking for build artifacts...\n${clear_color}"
-find . -name "*.o" > /dev/null
+find . -name *.o > /dev/null
 found="$?"
 if [ "$found" -eq 0 ]; then
         printf "${yellow}Build artifacts found -- clean before continuing?${clear_color} (y/N)\n"
@@ -206,15 +191,11 @@ fi
 cd $topdir
 printf "${yellow}Looking for compiled modules...${clear_color}\n"
 module_paths="$(find . -name *.ko | sed ':a;N;$!ba;s/\n/ /g')"
-if [ -z "$module_paths" ]; then
-	printf "${yellow}None found\n${clear_color}"
-else
-	if [ ! -d "$topdir/modules" ]; then
-		mkdir -p $topdir/modules
-	fi
-	cp $module_paths $topdir/modules/
-	cd $topdir/modules
-	tar cvf ../$tarball *
-	gzip -9 ../$tarball
-	printf "${green}Modules tarball $topdir/$tarball.gz created${clear_color}\n"
+if [ ! -d "$topdir/modules" ]; then
+	mkdir -p $topdir/modules
 fi
+cp $module_paths $topdir/modules/
+cd $topdir/modules
+tar cvf ../$tarball *
+gzip -9 ../$tarball
+printf "${green}Modules tarball $topdir/$tarball.gz created${clear_color}\n"
