@@ -16,6 +16,14 @@ args = sys.argv
 print(bcrypt.hashpw(args[1].encode(), bcrypt.gensalt()).decode())
 EOF
 }
+printhelp() {
+	printf "${green}$0${clear_color}: a script to hash each line of a file using MD5, SHA1, or bcrypt\n"
+	printf "Usage: ${green}$0${clear_color}"
+	printf ' -[msb] FILENAME [-o OUTFILE]'
+	printf "\nIf no OUTFILE is specified, FILENAME (without its extension) is used with .md5, .sha1, or .bcrypt as an extension\n"
+	printf "In order to use the bcrypt hashing function, you must have a Python3 interpreter and the bcrypt Python package\n"
+	exit 1
+}
 while getopts 'o:m:s:b:h' option; do
 	case $option in
 		o)
