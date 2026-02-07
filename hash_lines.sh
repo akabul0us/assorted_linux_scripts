@@ -16,15 +16,17 @@ args = sys.argv
 print(bcrypt.hashpw(args[1].encode(), bcrypt.gensalt()).decode())
 EOF
 }
+script_name="$(basename $0)"
 printhelp() {
-	printf "${green}$0${clear_color}: a script to hash each line of a file using MD5, SHA1, or bcrypt\n"
-	printf "Usage: ${green}$0${clear_color}"
-	printf ' -[msb] FILENAME [-o OUTFILE]'
+	printf "${green}$script_name${clear_color}: a script to hash each line of a file using MD5, SHA1, or bcrypt\n"
+	printf "Usage: ${green}$script_name${clear_color}"
+	printf ' -[msb] FILENAME [-o OUTFILE] [-n]'
 	printf "\nIf no OUTFILE is specified, FILENAME (without its extension) is used with .md5, .sha1, or .bcrypt as an extension\n"
+	printf "To only print hashes to stdout and NOT write to file, use -n\n"
 	printf "In order to use the bcrypt hashing function, you must have a Python3 interpreter and the bcrypt Python package\n"
 	exit 1
 }
-while getopts 'o:m:s:b:h' option; do
+while getopts 'o:m:s:b:hn' option; do
 	case $option in
 		o)
 			outfile="$OPTARG"
@@ -44,6 +46,9 @@ while getopts 'o:m:s:b:h' option; do
 		h)
 			printhelp
 			;;
+		n)
+			nowrite=1
+			;;
 		*)
 			printf "${red}Error${clear_color}: unknown flag ${red}$option${clear_color}\n"
 			printhelp
@@ -61,12 +66,17 @@ if ! touch $outfile > /dev/null 2>&1; then
 	outfile="${filename}.${algo}"
 fi
 list="$(cat $hashfile)"
+if [ "$nowrite" != 1 ]; then
+	writeout="tee $outfile"
+else
+	writeout="tee -"
+fi
 if [[ "$algo" == "md5" ]]; then
-	while IFS= read -r line; do (echo -n "$line" | md5sum); done <<< "$list" | cut -c -32 | tee $outfile
+	while IFS= read -r line; do (echo -n "$line" | md5sum); done <<< "$list" | cut -c -32 | ${writeout}
 elif [[ "$algo" == "sha1" ]]; then
-	while IFS= read -r line; do (echo -n "$line" | sha1sum); done <<< "$list" | cut -c -40 | tee $outfile
+	while IFS= read -r line; do (echo -n "$line" | sha1sum); done <<< "$list" | cut -c -40 | ${writeout}
 elif [[ "$algo" == "bcrypt" ]]; then
-	while IFS= read -r line; do bcrypt; done <<< "$list" | tee $outfile
+	while IFS= read -r line; do bcrypt; done <<< "$list" | ${writeout}
 else
 	printf "${red}Error${clear_color}: no recognized algorithm\n"
 	printhelp
