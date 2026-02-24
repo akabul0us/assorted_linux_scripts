@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 print_help() {
-	printf "Usage: $0" '[-y] [-h] [-d DIRECTORY]' "\n"
-	printf "-y: skip confirmation dialog\n"
-	printf "-h: print this help\n"
-	printf "-d DIRECTORY: specify which directory to rename files in\n"
-	printf "(if no directory is given, default is the present directory\n"
+	printf "Usage: $0 "
+    printf '[-y] [-h] [-d DIRECTORY]'
+	printf "\n-y: skip confirmation dialog\n"
+    echo '-h: print this help'
+	echo '-d DIRECTORY: specify which directory to rename files in'
+    printf "(if no directory is given, default is the present directory)\n"
 	exit 1
 }
 optflag=0

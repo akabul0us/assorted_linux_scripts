@@ -155,4 +155,20 @@ fi
 fromtemplate
 chmod +x scp$computer
 printf "Script created: scp$computer\n"
+read -p "Set up another wrapper for another device? (y/N)" newsetup
+case $newsetup in
+    [Yy])
+        unset ipaddress
+        unset altip
+        unset port
+        unset directory
+        unset computer
+        unset username
+        . $0
+        ;;
+      *)
+        printf "Quitting"
+        exit 0
+        ;;
+esac
 exit 0

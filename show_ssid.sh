@@ -5,9 +5,9 @@ yellow='\033[0;33m'
 pink='\033[0;35m'
 clear_color='\033[0m'
 print_help() {
-    printf "${pink}show-ssid${clear_color}: a simple script written in Bash/Python to read data from WPA/WPA2 handshakes in hc22000 form.\n"
-    printf "${yellow}Usage${clear_color}: "
-    printf './show-ssid.sh hashfile.hc22000 [full]'
+    printf "${pink}show-ssid${clear_color}: a simple script written in Bash/Python to read data from WPA/WPA2 handshakes in hc22000 form (output from hcxpcapngtool).\n"
+    printf "${yellow}Usage${clear_color}: $0"
+    printf 'hashfile.hc22000 [full]'
     printf "\n"
     echo "If full (or simply the letter f) is passed, output will include MIC, MAC address of client, MAC address of AP, and network SSID."
     echo "If not, output will only include the network SSID and the MAC address of the AP."
