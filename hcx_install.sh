@@ -30,6 +30,7 @@ else
 		for p in $packages; do
 			apt-get install $p -y
 		done
+	fi
 fi
 for t in $tools; do
 	if [ -d "$HOME/$t" ]; then
