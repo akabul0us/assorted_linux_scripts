@@ -16,6 +16,7 @@ print_help() {
 	printf "${red}Example workflow:${clear_color}\n"
 	echo "·Use wifite, hcxdumptool, airodump-ng etc to capture handshakes"
 	echo "·Use hcxpcapngtool to convert raw .cap/.pcap/.pcapng file into a .hc22000 file"
+	echo "·Use show-ssid to analyze handshake(s) captured"
 	echo "·Use $scriptname to analyze handshake(s) captured"
 	echo "·Put similar handshakes into groups"
 	echo "·Prepare hashcat charsets/masks/rules for each group"
@@ -54,45 +55,45 @@ else
 fi
 hashes="$(cat $hashfile | tr '\n' ' ')"
 standard() {
-    python3 - $e << EOF
+	python3 - $e << EOF
 import hashlib, hmac, sys, struct
 
 hashline = None
 
 if len(sys.argv) > 1:
-    hashline=sys.argv[1]
-    hl = hashline.split("*")
-    mac_ap = bytes.fromhex(hl[3])
-    essid = bytes.fromhex(hl[5])
+	hashline=sys.argv[1]
+	hl = hashline.split("*")
+	mac_ap = bytes.fromhex(hl[3])
+	essid = bytes.fromhex(hl[5])
 
 def show_values(mac_ap, essid):
-    print('\033[32;1m'"SSID:                     ", essid.decode())
-    print('\033[34;1m'"AP MAC Address:           ", "%02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", mac_ap), end='')
-    print('\x1b[0m', end='')
+	print('\033[32;1m'"SSID:", essid.decode())
+	print('\033[34;1m'"AP MAC Address:", "%02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", mac_ap), end='')
+	print('\x1b[0m', end='')
 
 show_values(mac_ap, essid)
 EOF
 }
 full() {
-    python3 - $e << EOF
+	python3 - $e << EOF
 import hashlib, hmac, sys, struct
 
 hashline = None
 
 if len(sys.argv) > 1:
-    hashline=sys.argv[1]
-    hl = hashline.split("*")
-    mic = bytes.fromhex(hl[2])
-    mac_ap = bytes.fromhex(hl[3])
-    mac_cl = bytes.fromhex(hl[4])
-    essid = bytes.fromhex(hl[5])
+	hashline=sys.argv[1]
+	hl = hashline.split("*")
+	mic = bytes.fromhex(hl[2])
+	mac_ap = bytes.fromhex(hl[3])
+	mac_cl = bytes.fromhex(hl[4])
+	essid = bytes.fromhex(hl[5])
 
 def show_values(mic, mac_ap, mac_cl, essid):
-    print('\033[33;1m'"MIC:                      ", mic.hex())
-    print('\033[32;1m'"SSID:                     ", essid.decode())
-    print('\033[34;1m'"AP MAC Address:           ", "%02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", mac_ap))
-    print('\033[35;1m'"Client MAC Address:       ", "%02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", mac_cl), end='')
-    print('\x1b[0m', end='')
+	print('\033[33;1m'"MIC:", mic.hex())
+	print('\033[32;1m'"SSID:", essid.decode())
+	print('\033[34;1m'"AP MAC Address:", "%02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", mac_ap))
+	print('\033[35;1m'"Client MAC Address:", "%02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", mac_cl), end='')
+	print('\x1b[0m', end='')
 
 show_values(mic, mac_ap, mac_cl, essid)
 EOF
