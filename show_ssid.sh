@@ -4,53 +4,53 @@ green='\033[0;32m'
 yellow='\033[0;33m'
 pink='\033[0;35m'
 clear_color='\033[0m'
+scriptname="$(basename $0)"
 print_help() {
-    printf "${pink}show-ssid${clear_color}: a simple script written in Bash/Python to read data from WPA/WPA2 handshakes in hc22000 form (output from hcxpcapngtool).\n"
-    printf "${yellow}Usage${clear_color}: $0"
-    printf 'hashfile.hc22000 [full]'
-    printf "\n"
-    echo "If full (or simply the letter f) is passed, output will include MIC, MAC address of client, MAC address of AP, and network SSID."
-    echo "If not, output will only include the network SSID and the MAC address of the AP."
-    echo "If the command-line tool oui is found, the device manufacturer will also be displayed."
-    echo "Each WPA/WPA2 handshake processed is printed after these details."
-    printf "${red}Example workflow:${clear_color}\n"
-    echo "·Use wifite, hcxdumptool, airodump-ng etc to capture handshakes"
-    echo "·Use hcxpcapngtool to convert raw .cap/.pcap/.pcapng file into a .hc22000 file"
-    echo "·Use show-ssid to analyze handshake(s) captured"
-    echo "·Put similar handshakes into groups"
-    echo "·Prepare hashcat charsets/masks/rules for each group"
-    echo "·Run hashcat"
-    echo "·???"
-    echo "·Profit"
-    exit 1
+	printf "${pink}$scriptname${clear_color}: a simple script written in Bash/Python to read data from WPA/WPA2 handshakes in hc22000 form (output from hcxpcapngtool).\n"
+	printf "${yellow}Usage${clear_color}: ./$scriptname "
+	printf 'hashfile.hc22000 [full]'
+	printf "\nIf full (or simply the letter f) is passed, output will include MIC, MAC address of client, MAC address of AP, and network SSID.\n"
+	echo "If not, output will only include the network SSID and the MAC address of the AP."
+	echo "If the command-line tool whoismac is found, the device manufacturer will also be displayed."
+	echo "Each WPA/WPA2 handshake processed is printed after these details."
+	printf "${red}Example workflow:${clear_color}\n"
+	echo "·Use wifite, hcxdumptool, airodump-ng etc to capture handshakes"
+	echo "·Use hcxpcapngtool to convert raw .cap/.pcap/.pcapng file into a .hc22000 file"
+	echo "·Use $scriptname to analyze handshake(s) captured"
+	echo "·Put similar handshakes into groups"
+	echo "·Prepare hashcat charsets/masks/rules for each group"
+	echo "·Run hashcat"
+	echo "·???"
+	echo "·Profit"
+	exit 1
 }
 check_file() {
-    if [ ! -f "$hashfile" ]; then
-        echo "File not found"
-        print_help
-    fi
+	if [ ! -f "$hashfile" ]; then
+		echo "File $hashfile not found"
+		print_help
+	fi
 }
 if [ ! -z "$1" ]; then
-    hashfile="$1"
-    check_file
+	hashfile="$1"
+	check_file
 else
-    printf "${yellow}Path to hc22000 file ${clear_color}(one WPA/WPA2 hash per line): "
-    read hashfile
-    printf "\n"
-    check_file
+	printf "${yellow}Path to hc22000 file ${clear_color}(one WPA/WPA2 hash per line): "
+	read hashfile
+	printf "\n"
+	check_file
 fi
 if [ ! -z "$2" ]; then
-    flag="$2"
-    case $flag in
-        f | full)
-            function=full
-            ;;
-        *)
-            print_help;
-            ;;
-    esac
+	flag="$2"
+	case $flag in
+		f | full)
+			function=full
+			;;
+		*)
+			print_help;
+			;;
+	esac
 else
-    function=standard
+	function=standard
 fi
 hashes="$(cat $hashfile | tr '\n' ' ')"
 standard() {
@@ -97,24 +97,28 @@ def show_values(mic, mac_ap, mac_cl, essid):
 show_values(mic, mac_ap, mac_cl, essid)
 EOF
 }
-if command -v oui >/dev/null 2>&1; then
-    have_oui=yes
+if command -v whoismac >/dev/null 2>&1; then
+	if [ ! -f "$HOME/.hcxtools/oui.txt" ]; then
+		echo "Downloading OUI database from https://standards-oui.ieee.org/oui/oui.txt"
+		whoismac -d
+	fi
+have_oui=yes
 else
-    echo "Install oui from https://github.com/thatmattlove/oui to add device manufacturer to this script's output"
-    have_oui=no
+	echo "Install hcxtools from https://github.com/ZerBea/hcxtools to add device manufacturer to this script's output"
+	have_oui=no
 fi
 for e in $hashes; do
-    if [ "$function" == "full" ]; then
-        outputs="$(full)"
-    elif [ "$function" == "standard" ]; then
-        outputs="$(standard)"
-    fi
-    echo "$outputs"
-    if [ "$have_oui" == "yes" ]; then
-        printf "${red}Device manufacturer:       ${clear_color}"
-        ap_mac="$(printf "$outputs" | grep "AP MAC" | grep -oE "[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}")"
-        oui $ap_mac | tail -n 2 | head -n 1 | cut -c 50- | rev | cut -c 75- | rev 
-        printf "${clear_color}\n"
-    fi
-    printf "$e\n\n"
+	if [ "$function" == "full" ]; then
+		outputs="$(full)"
+	elif [ "$function" == "standard" ]; then
+		outputs="$(standard)"
+	fi
+	echo "$outputs"
+	if [ "$have_oui" == "yes" ]; then
+		printf "${red}Device manufacturer:"
+		ap_mac="$(printf "$outputs" | grep "AP MAC" | grep -oE "[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}")"
+		oui_result="$(whoismac -m $ap_mac | tr '\n' ' ' | sed 's/VENDOR:\ //g' | sed 's/,\ unicast//g')"
+		printf "$oui_result ${clear_color}\n"
+	fi
+	printf "$e\n\n"
 done
