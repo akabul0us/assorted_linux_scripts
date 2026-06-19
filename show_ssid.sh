@@ -67,9 +67,8 @@ if len(sys.argv) > 1:
 	essid = bytes.fromhex(hl[5])
 
 def show_values(mac_ap, essid):
-	print('\033[32;1m'"SSID:", essid.decode())
-	print('\033[34;1m'"AP MAC Address:", "%02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", mac_ap), end='')
-	print('\x1b[0m', end='')
+	print('\033[32;1m'"SSID:", '\x1b[0m', essid.decode())
+	print('\033[34;1m'"AP MAC Address:", '\x1b[0m', "%02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", mac_ap), end='')
 
 show_values(mac_ap, essid)
 EOF
@@ -89,11 +88,10 @@ if len(sys.argv) > 1:
 	essid = bytes.fromhex(hl[5])
 
 def show_values(mic, mac_ap, mac_cl, essid):
-	print('\033[33;1m'"MIC:", mic.hex())
-	print('\033[32;1m'"SSID:", essid.decode())
-	print('\033[34;1m'"AP MAC Address:", "%02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", mac_ap))
-	print('\033[35;1m'"Client MAC Address:", "%02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", mac_cl), end='')
-	print('\x1b[0m', end='')
+	print('\033[33;1m'"MIC:", '\x1b[0m', mic.hex())
+	print('\033[32;1m'"SSID:", '\x1b[0m', essid.decode())
+	print('\033[34;1m'"AP MAC:", '\x1b[0m', "%02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", mac_ap))
+	print('\033[35;1m'"Client MAC:", '\x1b[0m', "%02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", mac_cl), end='')
 
 show_values(mic, mac_ap, mac_cl, essid)
 EOF
@@ -116,10 +114,10 @@ for e in $hashes; do
 	fi
 	echo "$outputs"
 	if [ "$have_oui" == "yes" ]; then
-		printf "${red}Device manufacturer:"
+		printf "${red}Device manufacturer: ${clear_color}"
 		ap_mac="$(printf "$outputs" | grep "AP MAC" | grep -oE "[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}:[0-9,A-F,a-f]{2}")"
 		oui_result="$(whoismac -m $ap_mac | tr '\n' ' ' | sed 's/VENDOR:\ //g' | sed 's/,\ unicast//g')"
-		printf "$oui_result ${clear_color}\n"
+		printf "$oui_result\n"
 	fi
 	printf "$e\n\n"
 done
