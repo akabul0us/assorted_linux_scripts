@@ -16,7 +16,6 @@ print_help() {
 	printf "${red}Example workflow:${clear_color}\n"
 	echo "·Use wifite, hcxdumptool, airodump-ng etc to capture handshakes"
 	echo "·Use hcxpcapngtool to convert raw .cap/.pcap/.pcapng file into a .hc22000 file"
-	echo "·Use show-ssid to analyze handshake(s) captured"
 	echo "·Use $scriptname to analyze handshake(s) captured"
 	echo "·Put similar handshakes into groups"
 	echo "·Prepare hashcat charsets/masks/rules for each group"

@@ -6,11 +6,37 @@ blue='\033[0;34m'
 pink='\033[0;35m'
 teal='\033[0;36m'
 clear_color='\033[0m'
+printhelp() {
+	printf "${pink}$(basename $0)${clear_color}: a script to mount and unmount the system directories in a chroot\n"
+        printf "Usage: $(basename $0)"
+	printf ' [-d] [-h] path/to/chroot'
+	printf "\n-d: Do not dismount on script exit (useful if running a second instance of this script)\n"
+	printf "-h: show this help\n"
+	exit 1
+}	
 #check for root
 if [ $EUID -ne 0 ]; then
 	printf "${red}Run it as root${clear_color}\n"
 	exit 1
 fi
+#assume we're unmounting on script exit, unless changed by flag -d
+dismount=1
+while getopts option "dh"; do
+	case $option in
+		[Dd])
+			unset dismount
+			dismount=0
+			;;
+		[Hh])
+			printhelp
+			;;
+		*)
+			printf "${red}Error${clear_color}: unknown flag $option\n"
+			printhelp
+			;;
+	esac
+done
+shift $((OPTIND-1))
 #ask for chroot directory if not passed as argument
 if [ -z "$1" ]; then
 	read -p "Path to chroot directory: " CHROOT_DIR
@@ -19,7 +45,7 @@ else
 fi
 #check that the directory exists
 if [ ! -d "$CHROOT_DIR" ]; then
-	printf "${red}Error: Chroot directory ${clear_color}$CHROOT_DIR${red} does not exist.${clear_color}\n"
+	printf "${red}Error${clear_color}: Chroot directory $CHROOT_DIR does not exist.\n"
 	exit 1
 fi
 #set a variable with that directory's full path
@@ -68,16 +94,20 @@ fi
 #fi
 # Handle unmounting on exit
 cleanup() {
-mount | grep -E $CHROOT_FULL_PATH | grep -oE "$CHROOT_FULL_PATH[a-z,\/]{1,}" | xargs umount -f 2>/dev/null
+	if [ "$dismount" -eq 1 ]; then
+		mount | grep -E $CHROOT_FULL_PATH | grep -oE "$CHROOT_FULL_PATH[a-z,\/]{1,}" | xargs umount -f 2>/dev/null
 #any subdirectories mounted under /sys or /dev will cause unmounting those targets to fail, so we specify them last
-umount -f $CHROOT_FULL_PATH/sys
-umount -f $CHROOT_FULL_PATH/dev
+		umount -f $CHROOT_FULL_PATH/sys
+		umount -f $CHROOT_FULL_PATH/dev
+	else
+		printf "Leaving chroot mounted\n"
+	fi
 }
 
 # Enter the chroot
-if [ -f "$CHROOT_DIR/usr/bin/zsh" ]; then
+if [ -f "$CHROOT_DIR/usr/bin/zsh" ] || [ -f "$CHROOT_DIR/bin/zsh"] ; then
 	printf "Starting ${yellow}ZSH${clear_color}\n"
-	chroot "$CHROOT_DIR" /usr/bin/zsh
+	chroot "$CHROOT_DIR" /usr/bin/zsh || chroot "$CHROOT_DIR" /bin/zsh
 else
 	if [ -f "$CHROOT_DIR/bin/bash" ]; then
 		printf "Starting ${yellow}bash${clear_color}\n"
