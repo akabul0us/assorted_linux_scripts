@@ -105,7 +105,7 @@ cleanup() {
 }
 
 # Enter the chroot
-if [ -f "$CHROOT_DIR/usr/bin/zsh" ] || [ -f "$CHROOT_DIR/bin/zsh"] ; then
+if [[ -f "$CHROOT_DIR/usr/bin/zsh" ]] || [[ -f "$CHROOT_DIR/bin/zsh" ]] ; then
 	printf "Starting ${yellow}ZSH${clear_color}\n"
 	chroot "$CHROOT_DIR" /usr/bin/zsh || chroot "$CHROOT_DIR" /bin/zsh
 else
