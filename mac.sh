@@ -29,7 +29,7 @@ download_db() {
 				;;
 			*)
 				printf "Updating $localdb from $database\n"
-				(curl -sS $database -o $localdb && exit 0) || (printf "Something went wrong\n" && exit 1)
+				curl -sS $database -o $localdb || (printf "Something went wrong\n" && exit 1)
 				;;
 		esac
 	fi
